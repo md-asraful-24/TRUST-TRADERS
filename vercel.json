@@ -1,0 +1,9 @@
+{
+  "name": "trust-traders",
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 10 * * *"
+    }
+  ]
+}

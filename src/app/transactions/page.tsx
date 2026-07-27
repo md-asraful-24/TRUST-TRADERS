@@ -267,13 +267,13 @@ export default function TransactionsPage() {
       ? `${selectedCompany || 'কোম্পানি'} মোট পাবে` 
       : `আমরা ${selectedCompany || 'কোম্পানি'}-এর কাছে মোট পাব`;
 
-    const [y, m] = monthStr.split('-');
-    const dateObj = new Date(parseInt(y), parseInt(m) - 2, 1);
-    const prevMonthText = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const [y, m] = monthStr.split('-').map(Number);
+    const lastDayPrevMonthDate = new Date(y, m - 1, 0);
+    const lastDayFormatted = lastDayPrevMonthDate.toLocaleDateString('en-GB');
 
     const balanceForwardText = balanceForward >= 0
-      ? `পূর্বের জের (${prevMonthText} পর্যন্ত): ${selectedCompany} পাবে`
-      : `পূর্বের জের (${prevMonthText} পর্যন্ত): আমরা পাব`;
+      ? `পূর্বের জের (${lastDayFormatted}): ${selectedCompany} পাবে`
+      : `পূর্বের জের (${lastDayFormatted}): আমরা পাব`;
 
     return {
       monthStr,
