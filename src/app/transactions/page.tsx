@@ -239,6 +239,18 @@ export default function TransactionsPage() {
     uniqueMonths.push(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
   }
 
+  const getTransactionColorClass = (tx: Transaction) => {
+    if (tx.description.includes('কে মাল দিছি') || tx.description.includes('মাল দিছি')) {
+      return 'text-emerald-600 dark:text-emerald-400 print:text-emerald-600';
+    }
+    if (tx.description.includes('আমাদের টাকা দিছে') || tx.description.includes('টাকা দিছে')) {
+      return 'text-rose-600 dark:text-rose-400 print:text-rose-600';
+    }
+    return tx.amount >= 0 
+      ? 'text-rose-600 dark:text-rose-400 print:text-rose-600'
+      : 'text-emerald-500 dark:text-emerald-400 print:text-emerald-500';
+  };
+
   const monthTablesData = uniqueMonths.map(monthStr => {
     let balanceForward = 0;
     const currentMonthTx: Transaction[] = [];
@@ -246,10 +258,9 @@ export default function TransactionsPage() {
     sortedTransactions.forEach(tx => {
       const txDate = new Date(tx.date);
       const txMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
-      const isNote = tx.description.includes('পাবে');
       
       if (txMonth < monthStr) {
-        if (!isNote) balanceForward += tx.amount;
+        balanceForward += tx.amount;
       } else if (txMonth === monthStr) {
         currentMonthTx.push(tx);
       }
@@ -257,8 +268,7 @@ export default function TransactionsPage() {
 
     let runningBalance = balanceForward;
     const tableRows = currentMonthTx.map(tx => {
-      const isNote = tx.description.includes('পাবে');
-      if (!isNote) runningBalance += tx.amount;
+      runningBalance += tx.amount;
       return { ...tx, runningBalance };
     });
 
@@ -369,13 +379,34 @@ export default function TransactionsPage() {
                     <button 
                       type="button"
                       onClick={() => {
+                        setDescription(`${selectedCompany} কে মাল দিছি`);
+                        if (amount.startsWith('-')) setAmount(amount.substring(1));
+                      }}
+                      className="px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full border border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20"
+                    >
+                      + মাল দিছি
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
                         setDescription(`${selectedCompany} কে টাকা দিছি`);
+                        if (amount && !amount.startsWith('-')) setAmount('-' + amount);
+                        else if (!amount) setAmount('-');
+                      }}
+                      className="px-3 py-1 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full border border-amber-200 dark:border-amber-500/20 hover:bg-amber-100 dark:hover:bg-amber-500/20"
+                    >
+                      + টাকা দেওয়া
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setDescription(`${selectedCompany} আমাদের টাকা দিছে`);
                         if (amount && !amount.startsWith('-')) setAmount('-' + amount);
                         else if (!amount) setAmount('-');
                       }}
                       className="px-3 py-1 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-full border border-rose-200 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20"
                     >
-                      + টাকা দেওয়া
+                      + টাকা দিছে
                     </button>
                     <button 
                       type="button"
@@ -655,10 +686,10 @@ export default function TransactionsPage() {
                     <td className="p-3 text-sm font-medium text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800 print:text-black print:border-slate-300 print:border">
                       {tx.quantity ? <span>{tx.quantity} {tx.unit}</span> : <span className="text-slate-400">-</span>}
                     </td>
-                    <td className={`p-3 text-sm font-medium border-r border-slate-100 dark:border-slate-800 print:border-slate-300 print:border ${tx.amount >= 0 ? 'text-rose-600 dark:text-rose-400 print:text-rose-600' : 'text-emerald-500 dark:text-emerald-400 print:text-emerald-500'}`}>
+                    <td className={`p-3 text-sm font-medium border-r border-slate-100 dark:border-slate-800 print:border-slate-300 print:border ${getTransactionColorClass(tx)}`}>
                       {tx.description}
                     </td>
-                    <td className={`p-3 text-sm font-bold text-right border-r border-slate-100 dark:border-slate-800 print:border-slate-300 print:border ${tx.amount >= 0 ? 'text-rose-600 dark:text-rose-400 print:text-rose-600' : 'text-emerald-500 dark:text-emerald-400 print:text-emerald-500'}`}>
+                    <td className={`p-3 text-sm font-bold text-right border-r border-slate-100 dark:border-slate-800 print:border-slate-300 print:border ${getTransactionColorClass(tx)}`}>
                       {tx.amount > 0 ? '' : '- '}{Math.abs(tx.amount).toLocaleString('en-IN')}/-
                     </td>
                     <td className="p-4 text-center print:hidden">
